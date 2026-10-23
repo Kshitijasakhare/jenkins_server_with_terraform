@@ -1,0 +1,1 @@
+az = "ap-south-1a"
