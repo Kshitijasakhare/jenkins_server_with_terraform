@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['plan', 'apply'],
+            description: 'Select action to perform'
+        )
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scmGit(
+                    branches: [[name: '*/main']],
+                    extensions: [],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Kshitijasakhare/jenkins_server_with_terraform.git'
+                    ]]
+                )
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                sh 'terraform init -reconfigure'
+            }
+        }
+
+        stage('Terraform Action') {
+            steps {
+                script {
+                    switch (params.ACTION) {
+                        case 'plan':
+                            echo 'Executing Terraform plan'
+                            sh 'terraform plan'
+                            break
+
+                        case 'apply':
+                            echo 'Executing Terraform apply'
+                            sh 'terraform apply --auto-approve'
+                            break
+
+                        default:
+                            error 'Unknown action'
+                    }
+                }
+            }
+        }
+    }
+}
